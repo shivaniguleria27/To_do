@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import { AddTask } from "./addTask";
 import TaskList from "./todoList";
 export default function Todo() {
   const [isOpen, setIsOpen] = useState(false);
-  const [task, setTask] = useState([]);
+ const [task, setTask] = useState(() => {
+    // Load saved tasks from localStorage
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    // Save tasks to localStorage whenever they change
+    localStorage.setItem("tasks", JSON.stringify(task));
+  }, [task]);
 
   function handleIsopen() {
     setIsOpen(true);
@@ -11,9 +20,19 @@ export default function Todo() {
   function handleIsClose() {
     setIsOpen(false);
   }
-   function taskHandler(newTask) {
-    setTask([...task, newTask]);
-  }
+  function taskHandler(newTaskDescription) {
+  const newTask = {
+    description: newTaskDescription,
+    completed: false
+  };
+  setTask([...task, newTask]);
+}
+function toggleTaskCompletion(index) {
+  const newTasks = [...task];
+  newTasks[index].completed = !newTasks[index].completed;
+  setTask(newTasks);
+}
+
     
  
   return (
@@ -30,7 +49,7 @@ export default function Todo() {
 
           {/* Form */}
           {isOpen && <AddTask onClose={handleIsClose}  onSubmit={taskHandler} />}
-          <TaskList task={task}/>
+          <TaskList task={task} onToggle={ toggleTaskCompletion} />
         </div>
       </div>
     </>
